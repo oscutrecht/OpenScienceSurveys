@@ -15,7 +15,17 @@ library(googlesheets4)
 # dataset
 gs4_deauth()
 sheet_id <- "https://docs.google.com/spreadsheets/d/1JuRPvEEaBwA2nWU8ptUF7Uq8jrtwlt3etAj5PvRcT40/"
-dat <- read_sheet(sheet_id, skip = 1, col_types = "c")
+dat_raw <- read_sheet(sheet_id, skip = 1, col_types = "c")
+cols_bin <- apply(dat_raw, 2, unique) |> 
+    sapply(function(x) length(x) <= 3) |> 
+    which() |> 
+    names()
+dat_num <- dat_raw |> 
+    mutate(
+        start_year = as.numeric(`Start data collection`),
+        end_year = as.numeric(`End data collection`)
+    ) |>
+    mutate(across(all_of(cols_bin), as.numeric))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -55,15 +65,20 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     output$table <- renderTable({
-        dat |> 
-            mutate(
-                start_year = as.numeric(`Start data collection`),
-                end_year = as.numeric(`End data collection`)
-                ) |>
-            filter(
+        if (input$filtering) {
+            dat_out <- dat_num |> filter(
                 (is.na(start_year) | start_year >= input$year[1]) & 
-                    (is.na(end_year) | end_year <= input$year[2]) 
-            )
+                    (is.na(end_year) | end_year <= input$year[2]) & 
+                    (`Open access` == input$o_access) & 
+                    (`Pre-printing` == input$o_preprint) & 
+                    (`Open peer-review` == input$o_peer) & 
+                    (`Open data` == input$o_data) & 
+                    (`Open code` == input$o_code) & 
+                    (`Pre-registration` == input$o_prereg) & 
+                    (`OER` == input$o_er) & 
+                    (`Public engagement` == input$o_pe)
+            )} else {dat_out <- dat_num}
+        return(dat_out)
         })
 }
 
