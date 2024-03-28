@@ -9,6 +9,7 @@
 
 # packages
 library(shiny)
+library(dplyr)
 library(googlesheets4)
 
 # dataset
@@ -27,7 +28,7 @@ ui <- fluidPage(
         sidebarPanel(
             sliderInput("year",
                         "Year conducted:",
-                        min = 2000,
+                        min = 2010,
                         max = 2025,
                         value = c(2018, 2024),
                         step = 1, 
@@ -48,7 +49,15 @@ server <- function(input, output) {
     
     # my_data <- readxl::read_excel("./dashboard/data/OpenScienceSurveys.xlsx", skip = 1)
     output$table <- renderTable({
-        dat
+        dat |> 
+            mutate(
+                start_year = as.numeric(`Start data collection`),
+                end_year = as.numeric(`End data collection`)
+                ) |>
+            filter(
+                (is.na(start_year) | start_year >= input$year[1]) & 
+                    (is.na(end_year) | end_year <= input$year[2]) 
+            )
         })
 }
 
