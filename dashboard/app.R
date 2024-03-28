@@ -11,6 +11,7 @@
 library(shiny)
 library(dplyr)
 library(googlesheets4)
+library(DT)
 
 # dataset
 gs4_deauth()
@@ -20,12 +21,13 @@ cols_bin <- apply(dat_raw, 2, unique) |>
     sapply(function(x) length(x) <= 3) |> 
     which() |> 
     names()
-dat_num <- dat_raw |> 
+dat_mut <- dat_raw |> 
     mutate(
-        start_year = as.numeric(`Start data collection`),
-        end_year = as.numeric(`End data collection`)
+      `Start data collection` = as.numeric(`Start data collection`),
+      `End data collection` = as.numeric(`End data collection`)
     ) |>
     mutate(across(all_of(cols_bin), ~case_when(. == 1 ~ "Included in survey" , . == 0 ~ "Not included")))
+dat_mut <- dat_mut[, c(1, 6:ncol(dat_mut), 2:5)]
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -57,18 +59,18 @@ ui <- fluidPage(
             ),
         # Show a plot of the generated distribution
         mainPanel(
-            tableOutput("table")
+            DTOutput("table")
             )
     )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    output$table <- renderTable({
+    output$table <- renderDT({
         if (input$filtering) {
-            dat_out <- dat_num |> filter(
-                (is.na(start_year) | start_year >= input$year[1]) & 
-                    (is.na(end_year) | end_year <= input$year[2]))
+            dat_out <- dat_mut |> filter(
+                (is.na(`Start data collection`) | `Start data collection` >= input$year[1]) & 
+                    (is.na(`End data collection`) | `End data collection` <= input$year[2]))
                     
             if (input$o_access != "No filter") {
               dat_out <- filter(dat_out, `Open access` == input$o_access)
@@ -94,9 +96,10 @@ server <- function(input, output) {
             if (input$o_pe != "No filter") {
               dat_out <- filter(dat_out, `Public engagement` == input$o_pe)
             }
-          } else {dat_out <- dat_num}
+          } else {dat_out <- dat_mut}
         return(dat_out)
-        })
+        }, options = list(
+          pageLength = 20), rownames = FALSE)
 }
 
 # Run the application 
