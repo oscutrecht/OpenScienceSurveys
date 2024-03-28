@@ -22,19 +22,19 @@ ui <- fluidPage(
 
     # Application title
     titlePanel("Open Science Surveys"),
-
+    checkboxInput("filtering", "Filter surveys", value = FALSE),
+    
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            checkboxInput("filtering", "Filter surveys", value = FALSE),
-            selectInput("o_access", "Open Access", choices = c("Included in survey", "Not included"), selected = "Included in survey"),    
-            selectInput("o_preprint", "Pre-printing", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_peer", "Open Peer-review", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_data", "Open Data", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_code", "Open Code", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_prereg", "Pre-registration", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_er", "Open Educational Resources", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
-            selectInput("o_pe", "Public Engagement", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            checkboxInput("o_access", "Open Access", value = TRUE),
+            checkboxInput("o_preprint", "Pre-printing", value = TRUE),
+            checkboxInput("o_peer", "Open Peer-review", value = TRUE),
+            checkboxInput("o_data", "Open Data", value = TRUE),
+            checkboxInput("o_code", "Open Code", value = TRUE),
+            checkboxInput("o_prereg", "Pre-registration", value = TRUE),
+            checkboxInput("o_er", "Open Educational Resources", value = TRUE),
+            checkboxInput("o_pe", "Public Engagement", value = TRUE),
             
             sliderInput("year",
                         "Year conducted:",
@@ -60,7 +60,7 @@ server <- function(input, output) {
                 start_year = as.numeric(`Start data collection`),
                 end_year = as.numeric(`End data collection`)
                 ) |>
-            filter(input$filtering &
+            filter(
                 (is.na(start_year) | start_year >= input$year[1]) & 
                     (is.na(end_year) | end_year <= input$year[2]) 
             )
