@@ -25,7 +25,7 @@ dat_num <- dat_raw |>
         start_year = as.numeric(`Start data collection`),
         end_year = as.numeric(`End data collection`)
     ) |>
-    mutate(across(all_of(cols_bin), as.numeric))
+    mutate(across(all_of(cols_bin), ~case_when(. == 1 ~ "Included in survey" , . == 0 ~ "Not included")))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -37,14 +37,14 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            checkboxInput("o_access", "Open Access", value = TRUE),
-            checkboxInput("o_preprint", "Pre-printing", value = TRUE),
-            checkboxInput("o_peer", "Open Peer-review", value = TRUE),
-            checkboxInput("o_data", "Open Data", value = TRUE),
-            checkboxInput("o_code", "Open Code", value = TRUE),
-            checkboxInput("o_prereg", "Pre-registration", value = TRUE),
-            checkboxInput("o_er", "Open Educational Resources", value = TRUE),
-            checkboxInput("o_pe", "Public Engagement", value = TRUE),
+            selectInput("o_access", "Open Access", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),    
+            selectInput("o_preprint", "Pre-printing", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_peer", "Open Peer-review", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_data", "Open Data", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_code", "Open Code", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_prereg", "Pre-registration", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_er", "Open Educational Resources", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
+            selectInput("o_pe", "Public Engagement", choices = c("Included in survey", "Not included", "No filter"), selected = "No filter"),
             
             sliderInput("year",
                         "Year conducted:",
@@ -68,16 +68,33 @@ server <- function(input, output) {
         if (input$filtering) {
             dat_out <- dat_num |> filter(
                 (is.na(start_year) | start_year >= input$year[1]) & 
-                    (is.na(end_year) | end_year <= input$year[2]) & 
-                    (`Open access` == input$o_access) & 
-                    (`Pre-printing` == input$o_preprint) & 
-                    (`Open peer-review` == input$o_peer) & 
-                    (`Open data` == input$o_data) & 
-                    (`Open code` == input$o_code) & 
-                    (`Pre-registration` == input$o_prereg) & 
-                    (`OER` == input$o_er) & 
-                    (`Public engagement` == input$o_pe)
-            )} else {dat_out <- dat_num}
+                    (is.na(end_year) | end_year <= input$year[2]))
+                    
+            if (input$o_access != "No filter") {
+              dat_out <- filter(dat_out, `Open access` == input$o_access)
+            }
+            if (input$o_preprint != "No filter") {
+              dat_out <- filter(dat_out, `Pre-printing` == input$o_preprint)
+            }
+            if (input$o_peer != "No filter") {   
+              dat_out <- filter(dat_out, `Open peer-review` == input$o_peer)
+            }
+            if (input$o_data != "No filter") {
+              dat_out <- filter(dat_out, `Open data` == input$o_data)
+            }
+            if (input$o_code != "No filter") {
+              dat_out <- filter(dat_out, `Open code` == input$o_code)
+            }
+            if (input$o_prereg != "No filter") {
+              dat_out <- filter(dat_out, `Pre-registration` == input$o_prereg)
+            }
+            if (input$o_er != "No filter") {
+              dat_out <- filter(dat_out, `OER` == input$o_er)
+            }
+            if (input$o_pe != "No filter") {
+              dat_out <- filter(dat_out, `Public engagement` == input$o_pe)
+            }
+          } else {dat_out <- dat_num}
         return(dat_out)
         })
 }
