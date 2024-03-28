@@ -26,6 +26,16 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
+            checkboxInput("filtering", "Filter surveys", value = FALSE),
+            selectInput("o_access", "Open Access", choices = c("Included in survey", "Not included"), selected = "Included in survey"),    
+            selectInput("o_preprint", "Pre-printing", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_peer", "Open Peer-review", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_data", "Open Data", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_code", "Open Code", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_prereg", "Pre-registration", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_er", "Open Educational Resources", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            selectInput("o_pe", "Public Engagement", choices = c("Included in survey", "Not included"), selected = "Included in survey"),
+            
             sliderInput("year",
                         "Year conducted:",
                         min = 2010,
@@ -44,17 +54,13 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
-
-    
-    # my_data <- readxl::read_excel("./dashboard/data/OpenScienceSurveys.xlsx", skip = 1)
     output$table <- renderTable({
         dat |> 
             mutate(
                 start_year = as.numeric(`Start data collection`),
                 end_year = as.numeric(`End data collection`)
                 ) |>
-            filter(
+            filter(input$filtering &
                 (is.na(start_year) | start_year >= input$year[1]) & 
                     (is.na(end_year) | end_year <= input$year[2]) 
             )
