@@ -65,41 +65,45 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  # filtered data
+  filtered <- reactive({dat_out <- dat_mut |> filter(
+    (is.na(`Start data collection`) | `Start data collection` >= input$year[1]) & 
+      (is.na(`End data collection`) | `End data collection` <= input$year[2]))
+  
+  if (input$o_access != "No filter") {
+    dat_out <- filter(dat_out, `Open access` == input$o_access)
+  }
+  if (input$o_preprint != "No filter") {
+    dat_out <- filter(dat_out, `Pre-printing` == input$o_preprint)
+  }
+  if (input$o_peer != "No filter") {   
+    dat_out <- filter(dat_out, `Open peer-review` == input$o_peer)
+  }
+  if (input$o_data != "No filter") {
+    dat_out <- filter(dat_out, `Open data` == input$o_data)
+  }
+  if (input$o_code != "No filter") {
+    dat_out <- filter(dat_out, `Open code` == input$o_code)
+  }
+  if (input$o_prereg != "No filter") {
+    dat_out <- filter(dat_out, `Pre-registration` == input$o_prereg)
+  }
+  if (input$o_er != "No filter") {
+    dat_out <- filter(dat_out, `OER` == input$o_er)
+  }
+  if (input$o_pe != "No filter") {
+    dat_out <- filter(dat_out, `Public engagement` == input$o_pe)
+  }
+  return(dat_out)
+  })
+  # table
     output$table <- renderDT({
-            dat_out <- dat_mut |> filter(
-                (is.na(`Start data collection`) | `Start data collection` >= input$year[1]) & 
-                    (is.na(`End data collection`) | `End data collection` <= input$year[2]))
-                    
-            if (input$o_access != "No filter") {
-              dat_out <- filter(dat_out, `Open access` == input$o_access)
-            }
-            if (input$o_preprint != "No filter") {
-              dat_out <- filter(dat_out, `Pre-printing` == input$o_preprint)
-            }
-            if (input$o_peer != "No filter") {   
-              dat_out <- filter(dat_out, `Open peer-review` == input$o_peer)
-            }
-            if (input$o_data != "No filter") {
-              dat_out <- filter(dat_out, `Open data` == input$o_data)
-            }
-            if (input$o_code != "No filter") {
-              dat_out <- filter(dat_out, `Open code` == input$o_code)
-            }
-            if (input$o_prereg != "No filter") {
-              dat_out <- filter(dat_out, `Pre-registration` == input$o_prereg)
-            }
-            if (input$o_er != "No filter") {
-              dat_out <- filter(dat_out, `OER` == input$o_er)
-            }
-            if (input$o_pe != "No filter") {
-              dat_out <- filter(dat_out, `Public engagement` == input$o_pe)
-            }
-            dat_out <- select(dat_out, !all_of(cols_bin))
-            bar_graph select(dat_out, all_of(cols_bin))
-            
-        return(dat_out)
+        select(filtered(), !all_of(cols_bin))
         }, options = list(
           pageLength = 20), rownames = FALSE)
+    # graph
+    # bar_graph <- select(dat_out, all_of(cols_bin))
+    
 }
 
 # Run the application 
