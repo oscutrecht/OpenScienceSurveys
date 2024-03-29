@@ -12,6 +12,8 @@ library(shiny)
 library(dplyr)
 library(googlesheets4)
 library(DT)
+library(tidyr)
+library(ggplot2)
 
 # dataset
 gs4_deauth()
