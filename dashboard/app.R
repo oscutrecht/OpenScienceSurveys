@@ -58,8 +58,9 @@ ui <- fluidPage(
             ),
         # Show a plot of the generated distribution
         mainPanel(
-            DTOutput("table")
-            )
+          DTOutput("table"),
+          plotOutput("plot")
+        )
     )
 )
 
@@ -102,9 +103,14 @@ server <- function(input, output) {
         }, options = list(
           pageLength = 20), rownames = FALSE)
     # graph
-    # bar_graph <- select(dat_out, all_of(cols_bin))
-    
-}
+    output$plot <- renderPlot({
+    dat_long <- tidyr::pivot_longer(filtered(), cols = cols_bin) #select(dat_out, all_of(cols_bin))
+    ggplot(dat_long, aes(y = ifelse(value == "Included in survey", 1, 0), x = name, color = name)) + 
+      geom_jitter(height = 0) +
+      labs(x = "Open Science Practice", y = "Included in survey", title = "Open Science Practices in Surveys") + 
+      theme_classic()
+    })
+    }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
