@@ -27,15 +27,14 @@ dat_mut <- dat_raw |>
       `End data collection` = as.numeric(`End data collection`)
     ) |>
     mutate(across(all_of(cols_bin), ~case_when(. == 1 ~ "Included in survey" , . == 0 ~ "Not included")))
-dat_mut <- dat_mut[, c(1, 6:ncol(dat_mut), 2:5)]
+dat_mut <- dat_mut[, c(1, 6:(ncol(dat_mut)-1), 2:5, ncol(dat_mut))]
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
     # Application title
     titlePanel("Open Science Surveys"),
-    checkboxInput("filtering", "Filter surveys", value = FALSE),
-    
+
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
@@ -67,7 +66,6 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     output$table <- renderDT({
-        if (input$filtering) {
             dat_out <- dat_mut |> filter(
                 (is.na(`Start data collection`) | `Start data collection` >= input$year[1]) & 
                     (is.na(`End data collection`) | `End data collection` <= input$year[2]))
@@ -96,7 +94,9 @@ server <- function(input, output) {
             if (input$o_pe != "No filter") {
               dat_out <- filter(dat_out, `Public engagement` == input$o_pe)
             }
-          } else {dat_out <- dat_mut}
+            dat_out <- select(dat_out, !all_of(cols_bin))
+            bar_graph select(dat_out, all_of(cols_bin))
+            
         return(dat_out)
         }, options = list(
           pageLength = 20), rownames = FALSE)
