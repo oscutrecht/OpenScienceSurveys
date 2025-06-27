@@ -5,7 +5,7 @@ OS_practices <- c(
   "Pre-printing",
   "Open data",
   "Open code",
-  "OER",
+  "Open educational resources",
   "Pre-registration",
   "Public engagement"
 )
@@ -30,12 +30,23 @@ dat_props <- data.frame(practice = OS_practices, prop = colMeans(dat_mut[, OS_pr
 dat_props <- sort_by(dat_props, dat_props$prop) 
 dat_props$ordered <- factor(dat_props$practice, levels = dat_props$practice, ordered = TRUE)
 
+practices_ordered <- rev(levels(dat_props$ordered))
+
 # proportions by year
 dat_years <- dat_mut |> 
   group_by(`End data collection`) |>
   summarise(across(OS_practices, sum)) |>
-  pivot_longer(OS_practices, names_to = "practice", values_to = "n")
+  pivot_longer(OS_practices, names_to = "practice", values_to = "n") 
 
-ggplot(dat_years, aes(x = `End data collection`, y = n, fill = practice)) +
+dat_years$ordered <- factor(dat_years$practice, levels = practices_ordered, ordered = TRUE)
+
+ggplot(dat_years, aes(x = `End data collection`, y = n, fill = ordered)) +
   geom_area(position = 'stack') +
-  labs(x = "Time (years)", y = "Number of studies", fill = "")
+  labs(x = "Time (years)", y = "Number of studies", fill = "") +
+  theme_minimal()
+
+ggplot(dat_props, aes(y = ordered, x = prop, fill = rev(ordered))) +
+  geom_bar(stat = "identity") +
+  #scale_y_discrete(labels = NULL) +
+  labs(x = "Inclusion rate (%)", y = "Open Science practice", fill = NULL) +
+  theme_minimal()
