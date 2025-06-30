@@ -26,11 +26,11 @@ dat_raw <- read_sheet(sheet_id, skip = 1, col_types = "c", trim_ws = TRUE)
 #   names()
 OS_practices <- c(
   "Open access",
+  "Open code",
+  "Open data",
+  "Open educational resources",
   "Open peer-review",
   "Pre-printing",
-  "Open data",
-  "Open code",
-  "OER",
   "Pre-registration",
   "Public engagement"
 )
@@ -52,7 +52,7 @@ ui <- fluidPage(
   # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
-      h4("Studies"),
+      # h4("Studies"),
       sliderInput(
         "year",
         "Year conducted:",
@@ -110,11 +110,11 @@ ui <- fluidPage(
        mainPanel(
             tabsetPanel(
               tabPanel("Summary",
-                "Summary",
+                # "Summary",
                 plotOutput("plot")
                 ),
               tabPanel("Study details",
-                "Studies",
+                # "Studies",
                 DTOutput("table"))
               )
           )
@@ -148,7 +148,7 @@ ui <- fluidPage(
         
         # table
         output$table <- renderDT({
-          select(filtered(), !all_of(cols_bin))
+          select(filtered(), c("Citation", "Start data collection", "End data collection", all_of(OS_practices), "OS themes", "Open survey materials", "Open survey data", "Supplementary files"))
         }, options = list(pageLength = 20), rownames = FALSE)
         # graph
         output$plot <- renderPlot({
