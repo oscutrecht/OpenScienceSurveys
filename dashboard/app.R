@@ -48,7 +48,8 @@ dat_mut <- dat_raw |>
 ui <- fluidPage(
   # Application title
   titlePanel("Open Science Surveys"),
-  
+  # h3("Operationalisation of Open Science in Survey Research"),
+  em("What is asked in surveys investigating the uptake of Open Science? Use this dashboard to find out, and reuse questionnaire items!"),
   # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
@@ -118,7 +119,8 @@ ui <- fluidPage(
                 DTOutput("table"))
               )
           )
-      )
+      ),
+  p("Research conducted at the ", a(href="https://openscienceretreat.eu/", "Open Science Retreat 2024"), " by Lotte van Burgsteden, Tanya van Goch, Bogdana Huma, Anne Marie Meijer, Iris Smal and Hanne Oberman. Materials available via ", a(href="https://zenodo.org/records/10932819", "Zenodo"), ".")
 )
       
       # Define server logic required to draw a histogram
@@ -148,7 +150,27 @@ ui <- fluidPage(
         
         # table
         output$table <- renderDT({
-          select(filtered(), c("Citation", "Start data collection", "End data collection", all_of(OS_practices), "OS themes", "Open survey materials", "Open survey data", "Supplementary files"))
+          dat_subset <- select(
+            filtered(),
+            c(
+              "Citation",
+              "Start data collection",
+              "End data collection",
+              all_of(OS_practices),
+              "OS themes",
+              "Open survey materials",
+              "Open survey data",
+              "Supplementary files"
+            ) 
+          ) |>
+          mutate(across(c(all_of(OS_practices),
+                 "Open survey materials",
+                 "Open survey data"),
+                 ~case_when(. == 1 ~ "yes" , . == 0 ~ "no"))) 
+          
+                 # ifelse(1, "yes", "no")))
+          # dat_subset[dat_subset == "1"] <- "yes"
+          # dat_subset[dat_subset == "0"] <- "no"
         }, options = list(pageLength = 20), rownames = FALSE)
         # graph
         output$plot <- renderPlot({
